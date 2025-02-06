@@ -7,21 +7,18 @@ namespace TShockPlugin
     [ApiVersion(2, 1)]
     public class TShockPlugin : TerrariaPlugin
     {
-        public override string Name => "TShock Plugin";
+        public override string Name => "BoomerangsOnly";
         public override string Author => "TRANQUILZOIIP - github.com/bbeeeeenn";
         public override string Description => base.Description;
         public override Version Version => base.Version;
 
         public TShockPlugin(Main game)
-            : base(game)
-        {
-            PluginSettings.PluginDisplayName = Name;
-        }
+            : base(game) { }
 
         public override void Initialize()
         {
             // Load config
-            TShock.Log.ConsoleInfo(PluginSettings.Load().Text);
+            // TShock.Log.ConsoleInfo(PluginSettings.Load().Text);
             // Load events
             EventManager.RegisterAll(this);
             // Load commands

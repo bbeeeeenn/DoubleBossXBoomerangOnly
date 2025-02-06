@@ -7,7 +7,8 @@ namespace TShockPlugin.Events;
 
 public class OnGetData : Models.Event
 {
-    public static readonly Dictionary<string, DateTime> LastErrMessage = new();
+    public static readonly Dictionary<string, DateTime> LastInvalidWeapon = new();
+    public static readonly Dictionary<string, DateTime> LastSummonTry = new();
     static readonly int[] MinionProjectiles =
     {
         ProjectileID.AbigailCounter,
@@ -95,18 +96,29 @@ public class OnGetData : Models.Event
         using BinaryReader reader = new(
             new MemoryStream(args.Msg.readBuffer, args.Index, args.Length)
         );
+
         if (args.MsgID == PacketTypes.ProjectileNew)
         {
             var projectileID = reader.ReadInt16();
-            if (!IsMinion(projectileID))
+            _ = reader.ReadSingle();
+            _ = reader.ReadSingle();
+            _ = reader.ReadSingle();
+            _ = reader.ReadSingle();
+            var ownderID = reader.ReadByte();
+            var type = reader.ReadInt16();
+
+            if (!IsMinion(type))
                 return;
-            _ = reader.ReadSingle();
-            _ = reader.ReadSingle();
-            _ = reader.ReadSingle();
-            _ = reader.ReadSingle();
-            var playerID = reader.ReadByte();
-            player.SendData(PacketTypes.ProjectileDestroy, "", projectileID, playerID);
-            player.SendErrorMessage("You can't summon a minion.");
+
+            player.SendData(PacketTypes.ProjectileDestroy, "", projectileID, ownderID);
+            if (
+                !LastSummonTry.ContainsKey(player.Name)
+                || (DateTime.Now - LastSummonTry[player.Name]).Seconds >= 5
+            )
+            {
+                LastSummonTry[player.Name] = DateTime.Now;
+                player.SendErrorMessage("You can't summon a minion.");
+            }
             args.Handled = true;
         }
 
@@ -128,11 +140,11 @@ public class OnGetData : Models.Event
             player.SendData(PacketTypes.NpcUpdate, "", npcID);
 
             if (
-                !LastErrMessage.ContainsKey(player.Name)
-                || (DateTime.Now - LastErrMessage[player.Name]).Seconds >= 5
+                !LastInvalidWeapon.ContainsKey(player.Name)
+                || (DateTime.Now - LastInvalidWeapon[player.Name]).Seconds >= 5
             )
             {
-                LastErrMessage[player.Name] = DateTime.Now;
+                LastInvalidWeapon[player.Name] = DateTime.Now;
                 player.SendErrorMessage("You can only use a boomerang.");
             }
             args.Handled = true;
