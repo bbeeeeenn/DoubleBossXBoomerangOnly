@@ -9,7 +9,7 @@ public class EventManager
     public static readonly List<Event> events = new()
     {
         // Events
-        new OnReload(),
+        // new OnReload(),
         new OnGetData(),
     };
 
